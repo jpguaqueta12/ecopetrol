@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
-  useMock: false, // Siempre false en producción para que no use simulaciones
-  apiUrl: 'https://tu-monolito.com',
+  useMock: false,
+  apiUrl: 'https://app-central-ecopetrol-geeqdnayfth9d7cx.centralus-01.azurewebsites.net',
   mockUrl: {
     login: 'assets/mocks/login-mock.json',
     vacation: 'assets/mocks/vacation-mock.json',
@@ -14,14 +14,26 @@ export const environment = {
     disabilitiesLeader: 'assets/mocks/disabilities-leader-mock.json'
   },
   endpoint: {
-    login: '/auth/login',
-    vacation: '/employee/vacation',
-    birthday: '/employee/birthday',
-    disabilities: '/employee/disabilities',
-    calamity: '/employee/calamity',
-    birthdayLeader: '/birthday-leader/requests',
-    calamityLeader: '/calamity-leader/requests',
-    vacationLeader: '/vacation-leader/requests',
-    disabilitiesLeader: '/disabilities-leader/requests'
+    login: '/talento/login',
+    vacation: '/talento/listarVacaciones',
+    createVacation: '/talento/crearVacaciones',
+    birthday: '/talento/listarDiasCumpleanios',
+    createBirthday: '/talento/crearDiaCumpleanio',
+    disabilities: '/talento/listarIncapacidades',
+    createDisability: '/talento/crearIncapacidad',
+    calamity: '/talento/listarCalamidades',
+    createCalamity: '/talento/crearCalamidad',
+    vacationLeader: '/talento/listarVacacionesPendientes',
+    approveVacation: '/talento/aprobarVacaciones',
+    rejectVacation: '/talento/rechazarVacaciones',
+    birthdayLeader: '/talento/listarDiasCumpleaniosPendientes',
+    approveBirthday: '/talento/aprobarDiaCumpleanio',
+    rejectBirthday: '/talento/rechazarDiaCumpleanio',
+    disabilitiesLeader: '/talento/listarIncapacidadesPendientes',
+    approveDisability: '/talento/aprobarIncapacidad',
+    rejectDisability: '/talento/rechazarIncapacidad',
+    calamityLeader: '/talento/listarCalamidadesPendientes',
+    approveCalamity: '/talento/aprobarCalamidad',
+    rejectCalamity: '/talento/rechazarCalamidad'
   }
 };
