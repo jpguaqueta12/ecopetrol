@@ -11,6 +11,10 @@ app.use(createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
   on: {
+    proxyReq: (proxyReq) => {
+      proxyReq.removeHeader('origin');
+      proxyReq.removeHeader('referer');
+    },
     error: (err, req, res) => {
       res.status(502).json({ error: 'Backend unavailable', detail: err.message });
     }
