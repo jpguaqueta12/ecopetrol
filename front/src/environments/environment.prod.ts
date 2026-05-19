@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
   useMock: false,
-  apiUrl: 'https://app-central-ecopetrol-geeqdnayfth9d7cx.centralus-01.azurewebsites.net',
+  apiUrl: '',
   mockUrl: {
     login: 'assets/mocks/login-mock.json',
     vacation: 'assets/mocks/vacation-mock.json',

@@ -1,4 +1,4 @@
-name: Deploy Frontend - Angular
+name: Deploy Frontend - Angular (App Service)
 
 on:
   push:
@@ -27,16 +27,32 @@ jobs:
         working-directory: front
         run: npm ci
 
-      - name: Build Angular
+      - name: Build Angular (production)
         working-directory: front
         run: npx ng build --configuration production
 
-      - name: Deploy to Azure Static Web App
-        uses: Azure/static-web-apps-deploy@v1
+      - name: Assemble deploy package
+        run: |
+          mkdir -p deploy-pkg/dist
+          cp front/server.js deploy-pkg/
+          cp -r front/dist/mocks-ecopetrol deploy-pkg/dist/
+          cat > deploy-pkg/package.json <<'EOF'
+          {
+            "name": "talento-front-runtime",
+            "version": "1.0.0",
+            "private": true,
+            "scripts": { "start": "node server.js" },
+            "dependencies": {
+              "express": "^4.22.2",
+              "http-proxy-middleware": "^3.0.5"
+            }
+          }
+          EOF
+          cd deploy-pkg && npm install --omit=dev --silent
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: upload
-          app_location: front
-          output_location: dist/mocks-ecopetrol
-          skip_app_build: true
+          app-name: app-central-ecopetrol
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: deploy-pkg
