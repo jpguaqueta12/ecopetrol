@@ -51,6 +51,10 @@ const routes: Routes = [
     loadChildren: () => import('./features/leader/birthday/birthday.module').then(m => m.BirthdayModule)
   },
   {
+    path: 'people',
+    loadChildren: () => import('./features/people/people.module').then(m => m.PeopleModule)
+  },
+  {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full'
