@@ -6,10 +6,12 @@ import com.nttdata.ecopetrol.talento.repository.*;
 
 import com.nttdata.ecopetrol.talento.services.NotificacionCorreoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +33,9 @@ public class TalentoController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private SolicitudUnificadaRepository solicitudUnificadaRepositoryrepository;
 
     @Autowired
     private NotificacionCorreoService notificacionCorreoService;
@@ -359,5 +364,12 @@ public class TalentoController {
     @GetMapping("usuarios/porRol")
     public List<Usuario> buscarUsuariosPorRol(@RequestParam String rol) {
         return usuarioRepository.findByRol(rol);
+    }
+
+    @GetMapping("/consolidadoSolicitudes")
+    public List<SolicitudUnificada> getSolicitudesByFechaCreacion() {
+
+        List<SolicitudUnificada> listado = solicitudUnificadaRepositoryrepository.findAll();
+        return listado;
     }
 }

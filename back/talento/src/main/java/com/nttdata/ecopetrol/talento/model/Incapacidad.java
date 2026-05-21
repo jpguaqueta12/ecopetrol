@@ -31,6 +31,14 @@ public class Incapacidad {
     @JoinColumn(name = "lider_id")
     private Usuario lider;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "fecha_creacion", nullable = false, updatable = false)
+    private Date fechaCreacion;
+
+    @PrePersist
+    protected void onCreate() {
+        fechaCreacion = new Date();
+    }
 
     // Getters y setters sin encapsulamiento ni validación (mala práctica)
     public Long getId() { return id; }
@@ -88,5 +96,13 @@ public class Incapacidad {
 
     public void setArchivoAdjunto(String archivoAdjunto) {
         this.archivoAdjunto = archivoAdjunto;
+    }
+
+    public Date getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(Date fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 }

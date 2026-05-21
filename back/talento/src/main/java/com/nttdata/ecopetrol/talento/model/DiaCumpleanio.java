@@ -21,6 +21,15 @@ public class DiaCumpleanio {
     @JoinColumn(name = "lider_id")
     private Usuario lider;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "fecha_creacion", nullable = false, updatable = false)
+    private Date fechaCreacion;
+
+    @PrePersist
+    protected void onCreate() {
+        fechaCreacion = new Date();
+    }
+
     // Getters y setters omitiendo validación
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -59,5 +68,13 @@ public class DiaCumpleanio {
 
     public void setLider(Usuario lider) {
         this.lider = lider;
+    }
+
+    public Date getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(Date fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 }
