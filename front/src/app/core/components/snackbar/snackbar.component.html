@@ -1,0 +1,8 @@
+<div
+  *ngIf="visible"
+  class="app-snackbar"
+  [class.app-snackbar--success]="type === 'success'"
+  [class.app-snackbar--error]="type === 'error'"
+>
+  {{ message }}
+</div>

@@ -34,6 +34,9 @@ export const environment = {
     rejectDisability: '/talento/rechazarIncapacidad',
     calamityLeader: '/talento/listarCalamidadesPendientes',
     approveCalamity: '/talento/aprobarCalamidad',
-    rejectCalamity: '/talento/rechazarCalamidad'
+    rejectCalamity: '/talento/rechazarCalamidad',
+    closeMonth: '/talento/cierreMesSolicitudes',
+    monthClosureStatus: '/talento/cierreMes',
+    peopleReport: '/talento/consolidadoSolicitudes'
   }
 };

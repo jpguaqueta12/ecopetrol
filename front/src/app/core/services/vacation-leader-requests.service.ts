@@ -4,12 +4,17 @@ import { Observable, throwError } from 'rxjs';
 import { map, catchError, delay } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { formatDate, mapStatus } from './field-mapper';
+import { SnackbarService } from './snackbar.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VacationLeaderRequestsService {
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private snackbar: SnackbarService) { }
+
+  private showError(message: string) {
+    this.snackbar.showError(message);
+  }
 
   getRequests(): Observable<any[]> {
     if (environment.useMock) {
@@ -34,13 +39,39 @@ export class VacationLeaderRequestsService {
 
   approve(id: number): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}${environment.endpoint.approveVacation}/${id}?rol=LIDER`, {}).pipe(
-      catchError(this.handleError)
+      map((resp) => resp),
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 404 && typeof error.error === 'string') {
+          this.showError(error.error);
+          return throwError(() => error.error);
+        }
+        if (error.status === 500 && typeof error.error === 'string') {
+          this.showError(error.error);
+          return throwError(() => error.error);
+        }
+        const msg = error.error?.message || 'Error de conexión con el servidor backend';
+        this.showError(msg);
+        return throwError(() => msg);
+      })
     );
   }
 
   reject(id: number): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}${environment.endpoint.rejectVacation}/${id}?rol=LIDER`, {}).pipe(
-      catchError(this.handleError)
+      map((resp) => resp),
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 404 && typeof error.error === 'string') {
+          this.showError(error.error);
+          return throwError(() => error.error);
+        }
+        if (error.status === 500 && typeof error.error === 'string') {
+          this.showError(error.error);
+          return throwError(() => error.error);
+        }
+        const msg = error.error?.message || 'Error de conexión con el servidor backend';
+        this.showError(msg);
+        return throwError(() => msg);
+      })
     );
   }
 

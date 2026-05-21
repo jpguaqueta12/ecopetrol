@@ -52,6 +52,7 @@ export class PeopleRequestsService {
       );
     }
 
+    // ENDPOINT VACATION desde environment
     return this.http.get<any[]>(`${environment.apiUrl}${environment.endpoint.vacation}`).pipe(
       map(items => items.map(v => ({
         id: v.id,
@@ -85,6 +86,7 @@ export class PeopleRequestsService {
       );
     }
 
+    // ENDPOINT CALAMITY desde environment
     return this.http.get<any[]>(`${environment.apiUrl}${environment.endpoint.calamity}`).pipe(
       map(items => items.map(c => ({
         id: c.id,
@@ -118,6 +120,7 @@ export class PeopleRequestsService {
       );
     }
 
+    // ENDPOINT BIRTHDAY desde environment
     return this.http.get<any[]>(`${environment.apiUrl}${environment.endpoint.birthday}`).pipe(
       map(items => items.map(d => ({
         id: d.id,
@@ -151,6 +154,7 @@ export class PeopleRequestsService {
       );
     }
 
+    // ENDPOINT DISABILITIES desde environment
     return this.http.get<any[]>(`${environment.apiUrl}${environment.endpoint.disabilities}`).pipe(
       map(items => items.map(i => ({
         id: i.id,

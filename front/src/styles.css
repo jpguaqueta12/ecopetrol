@@ -24,3 +24,12 @@ body {
 * {
   box-sizing: border-box;
 }
+/* Snackbars para mensajes de éxito y error */
+.snackbar-success {
+  background-color: #2e7d32 !important; /* verde */
+  color: #fff !important;
+}
+.snackbar-error {
+  background-color: #c62828 !important; /* rojo */
+  color: #fff !important;
+}
