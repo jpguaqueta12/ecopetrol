@@ -1,6 +1,7 @@
 package com.nttdata.ecopetrol.talento.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
 
@@ -23,6 +24,10 @@ public class Incapacidad {
     private Integer totalDias;       // No se valida si es negativo o null
     private String diagnostico;      // Texto libre sin restricciones
     private String estado;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private Date fechaCreacion;
 
     @Lob
     private String archivoAdjunto;
@@ -89,4 +94,7 @@ public class Incapacidad {
     public void setArchivoAdjunto(String archivoAdjunto) {
         this.archivoAdjunto = archivoAdjunto;
     }
+
+    public Date getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(Date fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 }

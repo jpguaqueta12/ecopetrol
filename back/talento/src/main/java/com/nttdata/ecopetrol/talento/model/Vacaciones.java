@@ -1,6 +1,7 @@
 package com.nttdata.ecopetrol.talento.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
 
@@ -21,6 +22,10 @@ public class Vacaciones {
     private Integer totalDias;
     private String comentario;
     private String estado;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private Date fechaCreacion;
 
     @ManyToOne
     @JoinColumn(name = "lider_id")
@@ -66,4 +71,7 @@ public class Vacaciones {
     public void setLider(Usuario lider) {
         this.lider = lider;
     }
+
+    public Date getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(Date fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 }

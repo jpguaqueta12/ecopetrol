@@ -1,6 +1,8 @@
 package com.nttdata.ecopetrol.talento.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+
 import java.util.Date;
 
 @Entity
@@ -17,6 +19,11 @@ public class DiaCumpleanio {
     private Date fechaCumpleanio;       // Fecha del cumpleaños
     private String comentario;          // Comentario adicional sin validación
     private String estado;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private Date fechaCreacion;
+
     @ManyToOne
     @JoinColumn(name = "lider_id")
     private Usuario lider;
@@ -60,4 +67,7 @@ public class DiaCumpleanio {
     public void setLider(Usuario lider) {
         this.lider = lider;
     }
+
+    public Date getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(Date fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 }

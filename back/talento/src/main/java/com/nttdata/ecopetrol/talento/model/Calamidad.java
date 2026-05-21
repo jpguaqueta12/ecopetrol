@@ -1,6 +1,8 @@
 package com.nttdata.ecopetrol.talento.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+
 import java.util.Date;
 
 @Entity
@@ -20,6 +22,10 @@ public class Calamidad {
     private Integer totalDias;
     private String comentario;
     private String estado;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private Date fechaCreacion;
 
     @Lob
     private String archivoAdjunto;
@@ -79,4 +85,7 @@ public class Calamidad {
     public void setArchivoAdjunto(String archivoAdjunto) {
         this.archivoAdjunto = archivoAdjunto;
     }
+
+    public Date getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(Date fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 }

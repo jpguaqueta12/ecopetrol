@@ -1,6 +1,7 @@
 package com.nttdata.ecopetrol.talento.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,10 @@ public class NotificacionCorreoService {
         mensaje.setSubject(asunto);
         mensaje.setText(texto);
         mensaje.setFrom("ivandavid0997@gmail.com");
-        mailSender.send(mensaje);
+        try {
+            mailSender.send(mensaje);
+        } catch (MailException ex) {
+            System.err.println("No se pudo enviar la notificacion por correo: " + ex.getMessage());
+        }
     }
 }
