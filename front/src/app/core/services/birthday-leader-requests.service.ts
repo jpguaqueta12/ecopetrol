@@ -15,7 +15,7 @@ export class BirthdayLeaderRequestsService {
   ) { }
 
   private getAuthHeaders(): HttpHeaders {
-    const sessionId = localStorage.getItem('X-Session-ID');
+    const sessionId = sessionStorage.getItem('X-Session-ID');
     return new HttpHeaders({
       'X-Session-ID': sessionId || ''
     });

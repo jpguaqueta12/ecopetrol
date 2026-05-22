@@ -12,11 +12,18 @@ export class RolComponent {
   peopleEnabled = false;
 
   constructor(private router: Router) {
-    const userStr = localStorage.getItem('User');
+    const userStr = sessionStorage.getItem('User');
+
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
-        const role = user.role.toLowerCase();
+
+        if (!user || !user.rol) {
+          return;
+        }
+
+        const role = String(user.rol).toLowerCase();
+
         if (role === 'empleado') {
           this.empleadoEnabled = true;
         } else if (role === 'lider') {
@@ -28,8 +35,7 @@ export class RolComponent {
           this.peopleEnabled = true;
         }
       } catch (e) {
-        // Si hay error en el parseo, no habilita nada
-        console.error('Error parsing User from localStorage', e);
+        console.error('Error parsing User from sessionStorage', e);
       }
     }
   }

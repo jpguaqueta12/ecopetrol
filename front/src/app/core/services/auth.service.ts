@@ -19,7 +19,7 @@ export class AuthService {
   private readonly USER_KEY = 'User';
   private readonly SESSION_KEY = 'X-Session-ID';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   login(username: string, password: string): Observable<AuthUser> {
     const body = { usuario: username, contrasena: password };
@@ -30,20 +30,21 @@ export class AuthService {
       { observe: 'response' }
     ).pipe(
       map((response: HttpResponse<AuthUser>) => {
-        const responseBody = response.body;
+        const user = response.body;
 
-        if (!responseBody) {
+        if (!user) {
           throw new Error('Respuesta inválida del servidor');
         }
 
-        this.setUser(responseBody);
+        // Guardar información en sessionStorage
+        sessionStorage.setItem(this.USER_KEY, JSON.stringify(user));
 
         const sessionId = response.headers.get(this.SESSION_KEY);
         if (sessionId) {
-          localStorage.setItem(this.SESSION_KEY, sessionId);
+          sessionStorage.setItem(this.SESSION_KEY, sessionId);
         }
 
-        return responseBody;
+        return user;
       }),
       catchError((error: HttpErrorResponse) => {
         const errorMsg =
@@ -53,27 +54,5 @@ export class AuthService {
         return throwError(() => errorMsg);
       })
     );
-  }
-
-  logout(): void {
-    localStorage.removeItem(this.USER_KEY);
-    localStorage.removeItem(this.SESSION_KEY);
-  }
-
-  getCurrentUser(): AuthUser | null {
-    const user = localStorage.getItem(this.USER_KEY);
-    return user ? JSON.parse(user) : null;
-  }
-
-  isAuthenticated(): boolean {
-    return !!localStorage.getItem(this.SESSION_KEY);
-  }
-
-  getSessionId(): string | null {
-    return localStorage.getItem(this.SESSION_KEY);
-  }
-
-  private setUser(user: AuthUser): void {
-    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
   }
 }
