@@ -15,10 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -53,7 +50,6 @@ public class TalentoController {
 
     @PostMapping("/login")
     public ResponseEntity<Usuario> login(@RequestBody LoginRequest loginRequest) {
-
         logger.info("Solicitud de login para usuario '{}'", loginRequest != null ? loginRequest.getUsuario() : null);
 
         if (loginRequest == null || loginRequest.getUsuario() == null) {
@@ -69,8 +65,14 @@ public class TalentoController {
                 .orElse(null);
 
         if (usuarioEncontrado != null) {
-            logger.info("Login exitoso para usuario '{}'", cleanedUsuario);
-            return ResponseEntity.ok(usuarioEncontrado);
+            // Genera un "session id" inseguro
+            String sessionId = UUID.randomUUID().toString();
+            logger.info("Login exitoso para usuario '{}', session id generado: {}", cleanedUsuario, sessionId);
+
+            // Devuelve usuario en el body y session id en header
+            return ResponseEntity.ok()
+                    .header("X-Session-ID", sessionId)
+                    .body(usuarioEncontrado);
         } else {
             logger.warn("Login fallido: usuario '{}' no encontrado", cleanedUsuario);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -160,7 +162,14 @@ public class TalentoController {
     }
 
     @PostMapping("/aprobarVacaciones/{id}")
-    public ResponseEntity<?> aprobarVacaciones(@PathVariable Long id, @RequestParam String rol) {
+    public ResponseEntity<?> aprobarVacaciones(
+            @PathVariable Long id,
+            @RequestParam String rol,
+            @RequestHeader(value = "X-Session-ID", required = true) String sessionId) {
+        if (sessionId == null || sessionId.isEmpty()) {
+            logger.warn("El X-Session-ID es requerido ");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session ID requerido");
+        }
         logger.info("Intentando aprobar vacaciones [vacacionesId={}, rol={}]", id, rol);
 
         if (!"LIDER".equals(rol)) {
@@ -238,7 +247,14 @@ public class TalentoController {
     }
 
     @PostMapping("/aprobarIncapacidad/{id}")
-    public ResponseEntity<?> aprobarIncapacidad(@PathVariable Long id, @RequestParam String rol) {
+    public ResponseEntity<?> aprobarIncapacidad(
+            @PathVariable Long id,
+            @RequestParam String rol,
+            @RequestHeader(value = "X-Session-ID", required = true) String sessionId) {
+        if (sessionId == null || sessionId.isEmpty()) {
+            logger.warn("El X-Session-ID es requerido ");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session ID requerido");
+        }
 
         logger.info("Intentando aprobar incapacidad [incapacidadId={}, rol={}]", id, rol);
 
@@ -320,7 +336,15 @@ public class TalentoController {
     }
 
     @PostMapping("/aprobarCalamidad/{id}")
-    public ResponseEntity<?> aprobarCalamidad(@PathVariable Long id, @RequestParam String rol) {
+    public ResponseEntity<?> aprobarCalamidad(
+            @PathVariable Long id,
+            @RequestParam String rol,
+            @RequestHeader(value = "X-Session-ID", required = true) String sessionId) {
+
+        if (sessionId == null || sessionId.isEmpty()) {
+            logger.warn("El X-Session-ID es requerido ");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session ID requerido");
+        }
 
         logger.info("Intentando aprobar calamidad [calamidadId={}, rol={}]", id, rol);
 
@@ -401,7 +425,14 @@ public class TalentoController {
     }
 
     @PostMapping("/aprobarDiaCumpleanio/{id}")
-    public ResponseEntity<?> aprobarDiaCumpleanio(@PathVariable Long id, @RequestParam String rol) {
+    public ResponseEntity<?> aprobarDiaCumpleanio(
+            @PathVariable Long id,
+            @RequestParam String rol,
+            @RequestHeader(value = "X-Session-ID", required = true) String sessionId) {
+        if (sessionId == null || sessionId.isEmpty()) {
+            logger.warn("El X-Session-ID es requerido ");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session ID requerido");
+        }
 
         logger.info("Intentando aprobar día cumpleaños [diaCumpleanioId={}, rol={}]", id, rol);
 
