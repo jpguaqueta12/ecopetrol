@@ -25,8 +25,14 @@ export class CreateComponent implements OnInit {
 
   // Catálogos simulados
   employeeList: EmployeeMock[] = [
-    { number: 'E-001', name: 'Carlos Mendoza', businessUnit: 'Desarrollo Angular', leader: 'Laura Gómez' },
-    { number: 'E-002', name: 'Ana María Silva', businessUnit: 'Diseño UI/UX', leader: 'Sergio Torres' }
+    { number: '556781', name: 'Carlos Mendoza', businessUnit: 'Digital Strategy & Business', leader: 'Laura Gómez' },
+    { number: '902314', name: 'Ana María Silva', businessUnit: 'Digital Strategy & Business', leader: 'Sergio Torres' },
+    { number: '778920', name: 'Juan Pérez', businessUnit: 'Desarrollo Angular', leader: 'Andrés Felipe Restrepo' },
+    { number: '641275', name: 'Mariana López', businessUnit: 'Diseño UI/UX', leader: 'Laura Gómez' },
+    { number: '830492', name: 'Felipe Ramírez', businessUnit: 'Desarrollo Angular', leader: 'Sergio Torres' },
+    { number: '715903', name: 'Camila Torres', businessUnit: 'Digital Strategy & Business', leader: 'Andrés Felipe Restrepo' },
+    { number: '964120', name: 'Sebastián Herrera', businessUnit: 'Diseño UI/UX', leader: 'Laura Gómez' },
+    { number: '583746', name: 'Valentina Castro', businessUnit: 'Desarrollo Angular', leader: 'Sergio Torres' }
   ];
 
   businessUnits: string[] = ['Desarrollo Angular', 'Diseño UI/UX', 'Aseguramiento de Calidad'];
@@ -131,11 +137,13 @@ export class CreateComponent implements OnInit {
 
     if (this.selectedFile) {
       this.isLoading = true;
+      this.incapacityForm.disable();
       this.fileToBase64(this.selectedFile).then((base64: string) => {
         payload.documentBase64 = base64;
         this.sendRequest(payload);
       }).catch(() => {
         this.isLoading = false;
+        this.incapacityForm.enable();
         this.errorMessage = 'Error al procesar el archivo PDF.';
         setTimeout(() => { this.errorMessage = ''; }, 3000);
       });
@@ -170,6 +178,7 @@ export class CreateComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
+        this.incapacityForm.enable();
         this.errorMessage = 'Error al enviar la solicitud: ' + err;
         setTimeout(() => { this.errorMessage = ''; }, 3000);
       }

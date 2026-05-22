@@ -12,6 +12,7 @@ export class DetailComponent implements OnInit {
   isSidebarClosed: boolean = false;
   detailData: any = null;
   isLoading: boolean = false;
+  actionLoading: 'approve' | 'reject' | null = null;
   errorMessage: string = '';
 
   // Snackbar state
@@ -56,29 +57,37 @@ export class DetailComponent implements OnInit {
   }
 
   onApprove(): void {
-    if (!this.detailData) return;
+    if (!this.detailData || this.actionLoading) return;
+
+    this.actionLoading = 'approve';
 
     this.service.approve(this.detailData.id).subscribe({
       next: () => {
         this.detailData.status = 'Aprobado';
         this.openSnackbar('La solicitud fue aprobada correctamente.', 'success');
+        this.actionLoading = null;
       },
       error: (err) => {
         this.openSnackbar(err || 'No se pudo aprobar la solicitud.', 'error');
+        this.actionLoading = null;
       }
     });
   }
 
   onReject(): void {
-    if (!this.detailData) return;
+    if (!this.detailData || this.actionLoading) return;
+
+    this.actionLoading = 'reject';
 
     this.service.reject(this.detailData.id).subscribe({
       next: () => {
         this.detailData.status = 'Rechazado';
         this.openSnackbar('La solicitud fue rechazada correctamente.', 'success');
+        this.actionLoading = null;
       },
       error: (err) => {
         this.openSnackbar(err || 'No se pudo rechazar la solicitud.', 'error');
+        this.actionLoading = null;
       }
     });
   }

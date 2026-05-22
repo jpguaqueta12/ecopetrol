@@ -182,10 +182,21 @@
 
       <!-- Barra de acciones inferior separada -->
       <div class="form-footer">
-        <button class="back-btn" type="button" (click)="onGoBack()">Volver</button>
-        <button class="submit-btn" type="submit" [disabled]="vacationForm.invalid || totalDays === 0"
-          (click)="onSubmit()">
-          Enviar
+        <button class="back-btn" type="button" (click)="onGoBack()" [disabled]="isLoading">
+          Volver
+        </button>
+
+        <button class="submit-btn"
+                type="button"
+                [disabled]="vacationForm.invalid || isLoading"
+                (click)="onSubmit()">
+
+          <span *ngIf="!isLoading">Enviar</span>
+
+          <span *ngIf="isLoading">
+            <i class="fas fa-spinner fa-spin"></i> Enviando...
+          </span>
+
         </button>
       </div>
     </div>

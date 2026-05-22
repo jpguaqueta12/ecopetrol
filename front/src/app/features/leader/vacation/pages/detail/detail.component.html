@@ -53,7 +53,7 @@
   <!-- Contenido principal que expande su margen al colapsar el menú -->
   <main class="main" [class.full]="isSidebarClosed">
     <div class="card-container">
-      <div class="card">
+      <div class="card" *ngIf="requestData">
 
         <!-- Encabezado con línea divisoria limpia -->
         <div class="form-header">
@@ -72,19 +72,19 @@
             <div class="row-quad">
               <div class="info-group">
                 <label>Nombre de Empleado</label>
-                <span class="value-text">{{ requestData.employeeName }}</span>
+                <span class="value-text">{{ requestData?.employeeName }}</span>
               </div>
               <div class="info-group">
                 <label>Número de Empleado</label>
-                <span class="value-text">{{ requestData.employeeNumber }}</span>
+                <span class="value-text">{{ requestData?.employeeNumber }}</span>
               </div>
               <div class="info-group">
                 <label>Cédula</label>
-                <span class="value-text">{{ requestData.cedula }}</span>
+                <span class="value-text">{{ requestData?.cedula }}</span>
               </div>
               <div class="info-group">
                 <label>Unidad de Negocio</label>
-                <span class="value-text">{{ requestData.businessUnit }}</span>
+                <span class="value-text">{{ requestData?.businessUnit }}</span>
               </div>
             </div>
 
@@ -92,19 +92,19 @@
             <div class="row-quad">
               <div class="info-group">
                 <label>Nombre de Líder</label>
-                <span class="value-text">{{ requestData.leaderName }}</span>
+                <span class="value-text">{{ requestData?.leaderName }}</span>
               </div>
               <div class="info-group">
                 <label>Fecha Inicio</label>
-                <span class="value-box-disabled">{{ requestData.startDate }}</span>
+                <span class="value-box-disabled">{{ requestData?.startDate }}</span>
               </div>
               <div class="info-group">
                 <label>Fecha Fin</label>
-                <span class="value-box-disabled">{{ requestData.endDate }}</span>
+                <span class="value-box-disabled">{{ requestData?.endDate }}</span>
               </div>
               <div class="info-group">
                 <label>Total Días</label>
-                <span class="value-text-bold">{{ requestData.totalDays }}</span>
+                <span class="value-text-bold">{{ requestData?.totalDays }}</span>
               </div>
             </div>
 
@@ -113,18 +113,18 @@
               <div class="comment-section">
                 <label>Comentarios</label>
                 <div class="comment-box">
-                  {{ requestData.comments }}
+                  {{ requestData?.comments }}
                 </div>
               </div>
 
               <div class="status-section">
                 <label class="status-title">Estado Aprobación</label>
                 <div class="status-badge" [ngClass]="{
-              'approved': requestData.status === 'Aprobado',
-              'rejected': requestData.status === 'Rechazado',
-              'pending': requestData.status === 'Pendiente'
+              'approved': requestData?.status === 'Aprobado',
+              'rejected': requestData?.status === 'Rechazado',
+              'pending': requestData?.status === 'Pendiente'
             }">
-                  {{ requestData.status }}
+                  {{ requestData?.status }}
                 </div>
               </div>
             </div>
@@ -137,14 +137,31 @@
           <button type="button" class="back-btn-blue" (click)="onBack()">Volver</button>
 
           <div class="action-buttons">
-            <button type="button" class="action-btn reject-btn" [disabled]="requestData.status !== 'Pendiente'"
-              (click)="onReject()">
-              Rechazar
+
+            <button type="button"
+                    class="action-btn reject-btn"
+                    [disabled]="requestData?.status !== 'Pendiente' || actionLoading"
+                    (click)="onReject()">
+
+              <span *ngIf="actionLoading !== 'reject'">Rechazar</span>
+              <span *ngIf="actionLoading === 'reject'">
+                <i class="fas fa-spinner fa-spin"></i> Procesando...
+              </span>
+
             </button>
-            <button type="button" class="action-btn approve-btn" [disabled]="requestData.status !== 'Pendiente'"
-              (click)="onApprove()">
-              Aprobar
+
+            <button type="button"
+                    class="action-btn approve-btn"
+                    [disabled]="requestData?.status !== 'Pendiente' || actionLoading"
+                    (click)="onApprove()">
+
+              <span *ngIf="actionLoading !== 'approve'">Aprobar</span>
+              <span *ngIf="actionLoading === 'approve'">
+                <i class="fas fa-spinner fa-spin"></i> Procesando...
+              </span>
+
             </button>
+
           </div>
         </div>
 

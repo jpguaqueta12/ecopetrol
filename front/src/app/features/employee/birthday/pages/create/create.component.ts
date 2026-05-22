@@ -21,8 +21,14 @@ export class CreateComponent implements OnInit {
   birthdayForm!: FormGroup;
 
   employeeList: EmployeeMock[] = [
-    { number: 'E-001', name: 'Carlos Mendoza', businessUnit: 'Digital Strategy & Business', leader: 'Laura Gómez' },
-    { number: 'E-002', name: 'Ana María Silva', businessUnit: 'Digital Strategy & Business', leader: 'Sergio Torres' }
+    { number: '556781', name: 'Carlos Mendoza', businessUnit: 'Digital Strategy & Business', leader: 'Laura Gómez' },
+    { number: '902314', name: 'Ana María Silva', businessUnit: 'Digital Strategy & Business', leader: 'Sergio Torres' },
+    { number: '778920', name: 'Juan Pérez', businessUnit: 'Desarrollo Angular', leader: 'Andrés Felipe Restrepo' },
+    { number: '641275', name: 'Mariana López', businessUnit: 'Diseño UI/UX', leader: 'Laura Gómez' },
+    { number: '830492', name: 'Felipe Ramírez', businessUnit: 'Desarrollo Angular', leader: 'Sergio Torres' },
+    { number: '715903', name: 'Camila Torres', businessUnit: 'Digital Strategy & Business', leader: 'Andrés Felipe Restrepo' },
+    { number: '964120', name: 'Sebastián Herrera', businessUnit: 'Diseño UI/UX', leader: 'Laura Gómez' },
+    { number: '583746', name: 'Valentina Castro', businessUnit: 'Desarrollo Angular', leader: 'Sergio Torres' }
   ];
 
   businessUnits: string[] = ['Digital Strategy & Business', 'Desarrollo Angular', 'Diseño UI/UX'];
@@ -78,7 +84,7 @@ export class CreateComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.birthdayForm.invalid) return;
+    if (this.birthdayForm.invalid || this.isLoading) return;
 
     this.successMessage = '';
     this.errorMessage = '';
@@ -91,9 +97,13 @@ export class CreateComponent implements OnInit {
     };
 
     this.isLoading = true;
+    this.birthdayForm.disable();
+
     this.birthdayRequestService.createBirthdayRequest(payload).subscribe({
       next: (response) => {
         this.isLoading = false;
+        this.birthdayForm.enable();
+
         this.successMessage = 'Solicitud de Día de Cumpleaños enviada exitosamente.';
         setTimeout(() => {
           this.successMessage = '';
@@ -102,6 +112,8 @@ export class CreateComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
+        this.birthdayForm.enable();
+
         this.errorMessage = 'Error al enviar la solicitud: ' + err;
         setTimeout(() => { this.errorMessage = ''; }, 3000);
       }
