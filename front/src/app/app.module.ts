@@ -6,12 +6,10 @@ import { AppComponent } from './app.component';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { LoggingInterceptor } from './core/interceptors/logging.interceptor';
 // Eliminar Angular Material y animaciones por completo. Solo importa SnackbarComponent.
-import { SnackbarComponent } from './core/components/snackbar/snackbar.component';
 
 @NgModule({
   declarations: [
-    AppComponent,
-    SnackbarComponent
+    AppComponent
   ],
   imports: [
     BrowserModule,

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { CalamityRoutingModule } from './calamity-routing.module';
 import { DetailComponent } from './pages/detail/detail.component';
 import { CalamityComponent } from './pages/calamity/calamity.component';
+import { SharedModule } from '../../../shared/shared.module';
 
 
 @NgModule({
@@ -13,7 +14,8 @@ import { CalamityComponent } from './pages/calamity/calamity.component';
   ],
   imports: [
     CommonModule,
-    CalamityRoutingModule
+    CalamityRoutingModule,
+    SharedModule
   ]
 })
 export class CalamityModule { }

@@ -3,18 +3,13 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { SnackbarService } from './snackbar.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VacationRequestService {
 
-  constructor(private http: HttpClient, private snackbar: SnackbarService) { }
-
-  private showError(message: string) {
-    this.snackbar.showError(message);
-  }
+  constructor(private http: HttpClient) { }
 
   createVacationRequest(payload: any): Observable<any> {
     const body = {
@@ -30,7 +25,6 @@ export class VacationRequestService {
     return this.http.post<any>(`${environment.apiUrl}${environment.endpoint.createVacation}`, body).pipe(
       catchError((error: HttpErrorResponse) => {
         const msg = error.error?.message || 'Error de conexión con el servidor backend';
-        this.showError(msg);
         return throwError(() => msg);
       })
     );

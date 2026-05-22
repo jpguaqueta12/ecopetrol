@@ -1,25 +1,27 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { map, catchError, delay } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { formatDate, mapStatus } from './field-mapper';
-import { SnackbarService } from './snackbar.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VacationLeaderRequestsService {
-  constructor(private http: HttpClient, private snackbar: SnackbarService) { }
+  constructor(
+    private http: HttpClient
+  ) { }
 
-  private showError(message: string) {
-    this.snackbar.showError(message);
+  private getAuthHeaders(): HttpHeaders {
+    const sessionId = localStorage.getItem('X-Session-ID');
+    return new HttpHeaders({
+      'X-Session-ID': sessionId || ''
+    });
   }
 
+
   getRequests(): Observable<any[]> {
-    if (environment.useMock) {
-      return this.http.get<any>(environment.mockUrl.vacationLeader).pipe(delay(600), catchError(this.handleError));
-    }
     return this.http.get<any[]>(`${environment.apiUrl}${environment.endpoint.vacationLeader}`).pipe(
       map(items => items.map(v => ({
         id: v.id,
@@ -38,19 +40,39 @@ export class VacationLeaderRequestsService {
   }
 
   approve(id: number): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}${environment.endpoint.approveVacation}/${id}?rol=LIDER`, {}).pipe(
+    return this.http.post<any>(
+      `${environment.apiUrl}${environment.endpoint.approveVacation}/${id}?rol=LIDER`,
+      {},
+      { headers: this.getAuthHeaders() }
+    ).pipe(
       map((resp) => resp),
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 404 && typeof error.error === 'string') {
-          this.showError(error.error);
-          return throwError(() => error.error);
+
+        if (error.status === 400) {
+          const msg = error.error?.message || 'La solicitud no cumple las reglas de negocio.';
+          return throwError(() => msg);
         }
-        if (error.status === 500 && typeof error.error === 'string') {
-          this.showError(error.error);
-          return throwError(() => error.error);
+
+        if (error.status === 404) {
+          const msg = typeof error.error === 'string'
+            ? error.error
+            : 'Solicitud no encontrada.';
+          return throwError(() => msg);
         }
+
+        if (error.status === 409) {
+          const msg = error.error?.message || 'Conflicto al procesar la solicitud.';
+          return throwError(() => msg);
+        }
+
+        if (error.status === 500) {
+          const msg = typeof error.error === 'string'
+            ? error.error
+            : 'Error interno del servidor.';
+          return throwError(() => msg);
+        }
+
         const msg = error.error?.message || 'Error de conexión con el servidor backend';
-        this.showError(msg);
         return throwError(() => msg);
       })
     );
@@ -60,16 +82,32 @@ export class VacationLeaderRequestsService {
     return this.http.post<any>(`${environment.apiUrl}${environment.endpoint.rejectVacation}/${id}?rol=LIDER`, {}).pipe(
       map((resp) => resp),
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 404 && typeof error.error === 'string') {
-          this.showError(error.error);
-          return throwError(() => error.error);
+
+        if (error.status === 400) {
+          const msg = error.error?.message || 'No se puede rechazar esta solicitud.';
+          return throwError(() => msg);
         }
-        if (error.status === 500 && typeof error.error === 'string') {
-          this.showError(error.error);
-          return throwError(() => error.error);
+
+        if (error.status === 404) {
+          const msg = typeof error.error === 'string'
+            ? error.error
+            : 'Solicitud no encontrada.';
+          return throwError(() => msg);
         }
+
+        if (error.status === 409) {
+          const msg = error.error?.message || 'La solicitud ya fue procesada.';
+          return throwError(() => msg);
+        }
+
+        if (error.status === 500) {
+          const msg = typeof error.error === 'string'
+            ? error.error
+            : 'Error interno del servidor.';
+          return throwError(() => msg);
+        }
+
         const msg = error.error?.message || 'Error de conexión con el servidor backend';
-        this.showError(msg);
         return throwError(() => msg);
       })
     );

@@ -1,37 +1,64 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { SnackbarService } from '../../services/snackbar.service';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+
+export type SnackbarType = 'success' | 'error' | 'warning' | 'info';
 
 @Component({
   selector: 'app-snackbar',
   templateUrl: './snackbar.component.html',
   styleUrls: ['./snackbar.component.css']
 })
-export class SnackbarComponent implements OnInit, OnDestroy {
-  visible = false;
-  message = '';
-  type: 'success' | 'error' = 'success';
-  private timeoutId: any;
+export class SnackbarComponent {
 
-  constructor(private snackbarService: SnackbarService) {}
+  @Input() message: string = '';
+  @Input() type: SnackbarType = 'info';
+  @Input() show: boolean = false;
+  @Input() showConfirmButton: boolean = false;
+  @Input() confirmText: string = 'Confirmar';
+  @Input() closeText: string = 'Cerrar';
+  @Input() autoClose: boolean = false;
+  @Input() duration: number = 3000;
 
-  ngOnInit(): void {
-    this.snackbarService.registerListener((config) => {
-      this.message = config.message;
-      this.type = config.type;
-      this.visible = true;
+  @Output() confirmed: EventEmitter<void> = new EventEmitter<void>();
+  @Output() closed: EventEmitter<void> = new EventEmitter<void>();
 
-      if (this.timeoutId) {
-        clearTimeout(this.timeoutId);
-      }
-      this.timeoutId = setTimeout(() => {
-        this.visible = false;
-      }, config.type === 'success' ? 3000 : 5000);
-    });
+  private timeoutRef: any;
+
+  ngOnChanges(): void {
+    if (this.show && this.autoClose) {
+      this.startAutoClose();
+    }
   }
 
-  ngOnDestroy(): void {
-    if (this.timeoutId) {
-      clearTimeout(this.timeoutId);
+  onConfirm(): void {
+    this.confirmed.emit();
+    this.close();
+  }
+
+  onClose(): void {
+    this.close();
+  }
+
+  private close(): void {
+    this.show = false;
+    this.closed.emit();
+    this.clearTimeout();
+  }
+
+  private startAutoClose(): void {
+    this.clearTimeout();
+    this.timeoutRef = setTimeout(() => {
+      this.close();
+    }, this.duration);
+  }
+
+  private clearTimeout(): void {
+    if (this.timeoutRef) {
+      clearTimeout(this.timeoutRef);
+      this.timeoutRef = null;
     }
+  }
+
+  get snackbarClasses(): string {
+    return `snackbar snackbar-${this.type} ${this.show ? 'show' : ''}`;
   }
 }

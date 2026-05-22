@@ -117,4 +117,14 @@
       </table>
     </div>
   </main>
+
+<app-snackbar
+  [message]="snackbarMessage"
+  [type]="snackbarType"
+  [show]="showSnackbar"
+  [autoClose]="true"
+  [duration]="3000"
+  (closed)="onSnackbarClosed()">
+</app-snackbar>
+
 </div>

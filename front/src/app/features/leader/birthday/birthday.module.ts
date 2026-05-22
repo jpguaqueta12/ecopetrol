@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { BirthdayRoutingModule } from './birthday-routing.module';
 import { DetailComponent } from './pages/detail/detail.component';
 import { BirthdayComponent } from './pages/birthday/birthday.component';
+import { SharedModule } from '../../../shared/shared.module';
 
 
 @NgModule({
@@ -13,7 +14,8 @@ import { BirthdayComponent } from './pages/birthday/birthday.component';
   ],
   imports: [
     CommonModule,
-    BirthdayRoutingModule
+    BirthdayRoutingModule,
+    SharedModule
   ]
 })
 export class BirthdayModule { }

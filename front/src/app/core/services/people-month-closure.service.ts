@@ -3,14 +3,13 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { SnackbarService } from './snackbar.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PeopleMonthClosureService {
 
-  constructor(private http: HttpClient, private snackbar: SnackbarService) { }
+  constructor(private http: HttpClient) { }
 
   /**
    * Realiza el cierre de mes para solicitudes de ausencias
@@ -23,12 +22,10 @@ export class PeopleMonthClosureService {
     return this.http.post<any>(url, {}).pipe(
       map(() => {
         const msg = 'El cierre del mes se ha enviado correctamente.';
-        this.snackbar.showSuccess(msg);
         return msg;
       }),
       catchError((error: HttpErrorResponse) => {
         const errorMsg = error.error?.message || 'Error de conexión con el backend al realizar cierre de mes';
-        this.snackbar.showError(errorMsg);
         return throwError(() => errorMsg);
       })
     );

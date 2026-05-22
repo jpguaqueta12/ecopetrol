@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { PeopleRequestsService } from 'src/app/core/services/people-requests.service';
 import { PeopleReportService } from 'src/app/core/services/people-report.service';
 import { PeopleMonthClosureService } from 'src/app/core/services/people-month-closure.service';
-import { SnackbarService } from 'src/app/core/services/snackbar.service';
 /* Eliminado import { saveAs } from 'file-saver'; porque no está disponible y usaremos API nativa */
 
 @Component({
@@ -16,11 +15,15 @@ export class PeopleComponent implements OnInit {
   requests: any[] = [];
   isLoading: boolean = false;
 
+  // Snackbar state
+  snackbarMessage: string = '';
+  snackbarType: 'success' | 'error' | 'info' | 'warning' = 'info';
+  showSnackbar: boolean = false;
+
   constructor(
     private peopleRequestsService: PeopleRequestsService,
     private peopleReportService: PeopleReportService,
-    private peopleMonthClosureService: PeopleMonthClosureService,
-    private snackbar: SnackbarService
+    private peopleMonthClosureService: PeopleMonthClosureService
   ) {}
 
   ngOnInit(): void {
@@ -42,11 +45,13 @@ export class PeopleComponent implements OnInit {
       error: (error) => {
         console.error('Error al obtener solicitudes', error);
         this.isLoading = false;
-        this.snackbar.showError(
+
+        const msg =
           typeof error === 'string'
             ? error
-            : 'Hubo un problema al obtener las solicitudes. Intenta nuevamente más tarde.'
-        );
+            : 'Hubo un problema al obtener las solicitudes. Intenta nuevamente más tarde.';
+
+        this.openSnackbar(msg, 'error');
       },
     });
   }
@@ -60,33 +65,48 @@ export class PeopleComponent implements OnInit {
         a.download = 'reporte_solicitudes.csv';
         a.click();
         window.URL.revokeObjectURL(url);
-        this.snackbar.showSuccess('Reporte descargado correctamente.');
+
+        this.openSnackbar('Reporte descargado correctamente.', 'success');
       },
       error: (error) => {
         console.error('Error al descargar el reporte', error);
-        this.snackbar.showError(
+
+        const msg =
           typeof error === 'string'
             ? error
-            : 'No fue posible descargar el reporte. Por favor intenta de nuevo.'
-        );
+            : 'No fue posible descargar el reporte. Por favor intenta de nuevo.';
+
+        this.openSnackbar(msg, 'error');
       },
     });
   }
 
   closeMonth(): void {
     this.peopleMonthClosureService.closeMonth().subscribe({
-      next: () => {
-        this.snackbar.showSuccess('Cierre de mes realizado con éxito.');
+      next: (msg) => {
+        this.openSnackbar(msg || 'Cierre de mes realizado con éxito.', 'success');
         this.fetchRequests();
       },
       error: (error) => {
         console.error('Error al realizar cierre de mes', error);
-        this.snackbar.showError(
+
+        const msg =
           typeof error === 'string'
             ? error
-            : 'Error inesperado al realizar el cierre de mes.'
-        );
+            : 'Error inesperado al realizar el cierre de mes.';
+
+        this.openSnackbar(msg, 'error');
       }
     });
+  }
+
+  openSnackbar(message: string, type: 'success' | 'error' | 'info' | 'warning'): void {
+    this.snackbarMessage = message;
+    this.snackbarType = type;
+    this.showSnackbar = true;
+  }
+
+  onSnackbarClosed(): void {
+    this.showSnackbar = false;
   }
 }

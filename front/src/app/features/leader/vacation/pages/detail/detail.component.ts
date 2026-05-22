@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { VacationLeaderRequestsService } from 'src/app/core/services/vacation-leader-requests.service';
+import { SnackbarType } from 'src/app/core/components/snackbar/snackbar.component';
 
 @Component({
   selector: 'app-detail',
@@ -12,6 +13,11 @@ export class DetailComponent implements OnInit {
   requestData: any = null;
   isLoading: boolean = false;
   errorMessage: string = '';
+
+  // Snackbar state
+  snackbarMessage: string = '';
+  snackbarType: SnackbarType = 'info';
+  showSnackbar: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -45,17 +51,39 @@ export class DetailComponent implements OnInit {
 
   onApprove(): void {
     if (!this.requestData) return;
+
     this.service.approve(this.requestData.id).subscribe({
-      next: () => { this.requestData.status = 'Aprobado'; },
-      error: (err) => { this.errorMessage = 'Error al aprobar: ' + err; }
+      next: () => {
+        this.requestData.status = 'Aprobado';
+        this.openSnackbar('La solicitud fue aprobada correctamente.', 'success');
+      },
+      error: (err) => {
+        this.openSnackbar(err || 'Error al aprobar la solicitud.', 'error');
+      }
     });
   }
 
   onReject(): void {
     if (!this.requestData) return;
+
     this.service.reject(this.requestData.id).subscribe({
-      next: () => { this.requestData.status = 'Rechazado'; },
-      error: (err) => { this.errorMessage = 'Error al rechazar: ' + err; }
+      next: () => {
+        this.requestData.status = 'Rechazado';
+        this.openSnackbar('La solicitud fue rechazada correctamente.', 'success');
+      },
+      error: (err) => {
+        this.openSnackbar(err || 'Error al rechazar la solicitud.', 'error');
+      }
     });
+  }
+
+  openSnackbar(message: string, type: SnackbarType): void {
+    this.snackbarMessage = message;
+    this.snackbarType = type;
+    this.showSnackbar = true;
+  }
+
+  onSnackbarClosed(): void {
+    this.showSnackbar = false;
   }
 }
