@@ -14,6 +14,8 @@ export class PeopleComponent implements OnInit {
 
   requests: any[] = [];
   isLoading: boolean = false;
+  reportLoading: boolean = false;
+  monthClosureLoading: boolean = false;
 
   // Snackbar state
   snackbarMessage: string = '';
@@ -57,6 +59,10 @@ export class PeopleComponent implements OnInit {
   }
 
   downloadReport(): void {
+    if (this.reportLoading) return;
+
+    this.reportLoading = true;
+
     this.peopleReportService.downloadPeopleReportCSV().subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
@@ -67,6 +73,7 @@ export class PeopleComponent implements OnInit {
         window.URL.revokeObjectURL(url);
 
         this.openSnackbar('Reporte descargado correctamente.', 'success');
+        this.reportLoading = false;
       },
       error: (error) => {
         console.error('Error al descargar el reporte', error);
@@ -77,15 +84,21 @@ export class PeopleComponent implements OnInit {
             : 'No fue posible descargar el reporte. Por favor intenta de nuevo.';
 
         this.openSnackbar(msg, 'error');
+        this.reportLoading = false;
       },
     });
   }
 
   closeMonth(): void {
+    if (this.monthClosureLoading) return;
+
+    this.monthClosureLoading = true;
+
     this.peopleMonthClosureService.closeMonth().subscribe({
       next: (msg) => {
         this.openSnackbar(msg || 'Cierre de mes realizado con éxito.', 'success');
         this.fetchRequests();
+        this.monthClosureLoading = false;
       },
       error: (error) => {
         console.error('Error al realizar cierre de mes', error);
@@ -96,6 +109,7 @@ export class PeopleComponent implements OnInit {
             : 'Error inesperado al realizar el cierre de mes.';
 
         this.openSnackbar(msg, 'error');
+        this.monthClosureLoading = false;
       }
     });
   }

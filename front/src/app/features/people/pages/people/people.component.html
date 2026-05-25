@@ -47,21 +47,35 @@
         <button
           type="button"
           class="btn-report"
+          [disabled]="reportLoading"
           (click)="downloadReport()"
           aria-label="Descargar reporte de solicitudes"
         >
-          <i class="fas fa-file-download" aria-hidden="true"></i>
-          <span>Descargar reporte</span>
+          <span *ngIf="!reportLoading">
+            <i class="fas fa-file-download" aria-hidden="true"></i>
+            <span>Descargar reporte</span>
+          </span>
+          <span *ngIf="reportLoading">
+            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+            <span>Descargando...</span>
+          </span>
         </button>
 
         <button
           type="button"
           class="btn-month-closure"
+          [disabled]="monthClosureLoading"
           (click)="closeMonth()"
           aria-label="Realizar cierre de mes"
         >
-          <i class="fas fa-calendar-check" aria-hidden="true"></i>
-          <span>Cierre de mes</span>
+          <span *ngIf="!monthClosureLoading">
+            <i class="fas fa-calendar-check" aria-hidden="true"></i>
+            <span>Cierre de mes</span>
+          </span>
+          <span *ngIf="monthClosureLoading">
+            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+            <span>Procesando...</span>
+          </span>
         </button>
       </div>
     </section>
