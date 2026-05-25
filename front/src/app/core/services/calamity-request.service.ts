@@ -22,7 +22,8 @@ export class CalamityRequestService {
       comentario: payload.comments || null,
       descripcion: payload.comments || null,
       archivoAdjunto: payload.fileName || null,
-      lider: null
+      lider: null,
+      fechaCreacion: new Date().toISOString()
     };
     return this.http.post<any>(`${environment.apiUrl}${environment.endpoint.createCalamity}`, body).pipe(
       catchError(this.handleError)

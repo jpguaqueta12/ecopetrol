@@ -35,7 +35,7 @@ export const environment = {
     calamityLeader: '/talento/listarCalamidadesPendientes',
     approveCalamity: '/talento/aprobarCalamidad',
     rejectCalamity: '/talento/rechazarCalamidad',
-    closeMonth: '/talento/cierreMesSolicitudes',
+    closeMonth: '/talento/cierreMes',
     monthClosureStatus: '/talento/cierreMes',
     peopleReport: '/talento/consolidadoSolicitudes'
   }

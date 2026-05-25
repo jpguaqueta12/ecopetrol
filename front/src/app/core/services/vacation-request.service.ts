@@ -20,7 +20,8 @@ export class VacationRequestService {
       fechaFin: payload.endDate || null,
       totalDias: payload.totalDays || null,
       comentario: payload.comments || null,
-      lider: null
+      lider: null,
+      fechaCreacion: new Date().toISOString()
     };
     return this.http.post<any>(`${environment.apiUrl}${environment.endpoint.createVacation}`, body).pipe(
       catchError((error: HttpErrorResponse) => {

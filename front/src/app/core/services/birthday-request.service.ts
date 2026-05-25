@@ -18,7 +18,8 @@ export class BirthdayRequestService {
       unidadNegocio: payload.businessUnit,
       fechaCumpleanio: payload.startDate || null,
       comentario: payload.comments || null,
-      lider: null
+      lider: null,
+      fechaCreacion: new Date().toISOString()
     };
     return this.http.post<any>(`${environment.apiUrl}${environment.endpoint.createBirthday}`, body).pipe(
       catchError((error: HttpErrorResponse) => {

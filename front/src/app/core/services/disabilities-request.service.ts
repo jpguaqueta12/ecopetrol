@@ -24,7 +24,8 @@ export class DisabilitiesRequestService {
       totalDias: payload.totalDays || null,
       diagnostico: payload.diagnosis || null,
       archivoAdjunto: payload.fileName || null,
-      lider: null
+      lider: null,
+      fechaCreacion: new Date().toISOString()
     };
     return this.http.post<any>(`${environment.apiUrl}${environment.endpoint.createDisability}`, body).pipe(
       catchError(this.handleError)

@@ -38,7 +38,7 @@ export class AuthService {
 
         // Guardar información en sessionStorage
         sessionStorage.setItem(this.USER_KEY, JSON.stringify(user));
-
+        console.log('response.headers', response.headers);
         const sessionId = response.headers.get(this.SESSION_KEY);
         if (sessionId) {
           sessionStorage.setItem(this.SESSION_KEY, sessionId);
