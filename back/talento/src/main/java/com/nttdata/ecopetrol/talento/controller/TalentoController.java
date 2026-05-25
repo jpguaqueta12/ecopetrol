@@ -10,7 +10,6 @@ import com.nttdata.ecopetrol.talento.services.ValidacionVacacionesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,10 +47,6 @@ public class TalentoController {
 
     private static final Logger logger = LoggerFactory.getLogger(TalentoController.class);
 
-    @CrossOrigin(
-            origins = "*",
-            exposedHeaders = "X-Session-ID"
-    )
     @PostMapping("/login")
     public ResponseEntity<Usuario> login(@RequestBody LoginRequest loginRequest) {
         logger.info("Solicitud de login para usuario '{}'", loginRequest != null ? loginRequest.getUsuario() : null);
@@ -554,7 +549,7 @@ public class TalentoController {
         Random random = new Random();
         int delaySeconds = 20 + random.nextInt(71);
         logger.info("Aplicando delay de {} segundos...", delaySeconds);
-        
+
         try {
             Thread.sleep(delaySeconds * 1000L);
         } catch (InterruptedException e) {
