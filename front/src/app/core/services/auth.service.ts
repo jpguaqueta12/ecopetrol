@@ -39,8 +39,13 @@ export class AuthService {
         // Guardar información en sessionStorage
         sessionStorage.setItem(this.USER_KEY, JSON.stringify(user));
 
-        sessionStorage.setItem(this.SESSION_KEY, '56432'); // Valor fijo para simular sesión
+        const sessionId = response.headers.get(this.SESSION_KEY);
 
+        if (!sessionId) {
+          throw new Error('El servidor no devolvió el X-Session-ID');
+        }
+
+        sessionStorage.setItem(this.SESSION_KEY, sessionId);
 
         return user;
       }),
