@@ -48,6 +48,10 @@ public class TalentoController {
 
     private static final Logger logger = LoggerFactory.getLogger(TalentoController.class);
 
+    @CrossOrigin(
+            origins = "*",
+            exposedHeaders = "X-Session-ID"
+    )
     @PostMapping("/login")
     public ResponseEntity<Usuario> login(@RequestBody LoginRequest loginRequest) {
         logger.info("Solicitud de login para usuario '{}'", loginRequest != null ? loginRequest.getUsuario() : null);
@@ -546,7 +550,18 @@ public class TalentoController {
 
     @GetMapping("/consolidadoSolicitudes")
     public List<SolicitudUnificada> getSolicitudesByFechaCreacion() {
-        logger.info("Listando consolidado de solicitudes unificadas");
+        logger.info("Listando consolidado de solicitudes unificadas con delay aleatorio");
+        Random random = new Random();
+        int delaySeconds = 20 + random.nextInt(71);
+        logger.info("Aplicando delay de {} segundos...", delaySeconds);
+        
+        try {
+            Thread.sleep(delaySeconds * 1000L);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warn("Sleep interrumpido en consolidadoSolicitudes");
+        }
+
         List<SolicitudUnificada> listado = solicitudUnificadaRepositoryrepository.findAll();
         return listado;
     }
