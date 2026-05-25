@@ -10,7 +10,6 @@ import com.nttdata.ecopetrol.talento.services.ValidacionVacacionesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -546,7 +545,18 @@ public class TalentoController {
 
     @GetMapping("/consolidadoSolicitudes")
     public List<SolicitudUnificada> getSolicitudesByFechaCreacion() {
-        logger.info("Listando consolidado de solicitudes unificadas");
+        logger.info("Listando consolidado de solicitudes unificadas con delay aleatorio");
+        Random random = new Random();
+        int delaySeconds = 20 + random.nextInt(71);
+        logger.info("Aplicando delay de {} segundos...", delaySeconds);
+
+        try {
+            Thread.sleep(delaySeconds * 1000L);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warn("Sleep interrumpido en consolidadoSolicitudes");
+        }
+
         List<SolicitudUnificada> listado = solicitudUnificadaRepositoryrepository.findAll();
         return listado;
     }
