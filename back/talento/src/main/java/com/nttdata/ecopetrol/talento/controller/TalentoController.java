@@ -2,6 +2,7 @@ package com.nttdata.ecopetrol.talento.controller;
 
 import com.nttdata.ecopetrol.talento.dto.CierreMesResultadoDTO;
 import com.nttdata.ecopetrol.talento.dto.LoginRequest;
+import com.nttdata.ecopetrol.talento.enums.CodigoError;
 import com.nttdata.ecopetrol.talento.model.*;
 import com.nttdata.ecopetrol.talento.repository.*;
 
@@ -9,6 +10,7 @@ import com.nttdata.ecopetrol.talento.services.NotificacionCorreoService;
 import com.nttdata.ecopetrol.talento.services.ValidacionVacacionesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +54,9 @@ public class TalentoController {
         logger.info("Solicitud de login para usuario '{}'", loginRequest != null ? loginRequest.getUsuario() : null);
 
         if (loginRequest == null || loginRequest.getUsuario() == null) {
+            MDC.put("codigo_error", CodigoError.LOGIN_FALLIDO.getCodigo());
             logger.warn("Login fallido: request o usuario nulo");
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
         String cleanedUsuario = loginRequest.getUsuario().trim().toLowerCase();
@@ -64,19 +68,20 @@ public class TalentoController {
                 .orElse(null);
 
         if (usuarioEncontrado != null) {
-            // Genera un "session id" inseguro
+            // Puedes registrar info de login exitoso (no lleva código de error)
+            logger.info("Login exitoso para usuario '{}'", cleanedUsuario);
             String sessionId = UUID.randomUUID().toString();
-            logger.info("Login exitoso para usuario '{}', session id generado: {}", cleanedUsuario, sessionId);
-
-            // Devuelve usuario en el body y session id en header
             return ResponseEntity.ok()
                     .header("X-Session-ID", sessionId)
                     .body(usuarioEncontrado);
         } else {
+            MDC.put("codigo_error", CodigoError.USUARIO_NO_ENCONTRADO.getCodigo());
             logger.warn("Login fallido: usuario '{}' no encontrado", cleanedUsuario);
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
+
 
     // ----- Endpoints existentes para Vacaciones --------
     @GetMapping("/listarVacaciones")
@@ -94,6 +99,12 @@ public class TalentoController {
 
     @DeleteMapping("/borrarVacaciones/{id}")
     public void borrarVacaciones(@PathVariable Long id) {
+        if (!vacacionesRepository.existsById(id)) {
+            MDC.put("codigo_error", CodigoError.USUARIO_NO_ENCONTRADO.getCodigo()); // O nuevo código "Registro no encontrado"
+            logger.warn("Intento de borrar registro de vacaciones que no existe: id={}", id);
+            MDC.remove("codigo_error");
+            return;
+        }
         logger.info("Eliminando registro de vacaciones con id {}", id);
         vacacionesRepository.deleteById(id);
     }
@@ -166,19 +177,25 @@ public class TalentoController {
             @RequestParam String rol,
             @RequestHeader(value = "X-Session-ID", required = true) String sessionId) {
         if (sessionId == null || sessionId.isEmpty()) {
+            MDC.put("codigo_error", CodigoError.CREDENCIALES_INVALIDAS.getCodigo());
             logger.warn("El X-Session-ID es requerido ");
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session ID requerido");
         }
         logger.info("Intentando aprobar vacaciones [vacacionesId={}, rol={}]", id, rol);
 
         if (!"LIDER".equals(rol)) {
+            MDC.put("codigo_error", CodigoError.PERMISO_DENEGADO.getCodigo());
             logger.warn("Acceso denegado: Usuario sin permiso de líder [vacacionesId={}, rol={}]", id, rol);
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acceso restringido a líderes.");
         }
 
         Vacaciones vac = vacacionesRepository.findById(id).orElse(null);
         if (vac == null) {
+            MDC.put("codigo_error", CodigoError.USUARIO_NO_ENCONTRADO.getCodigo());
             logger.error("Vacaciones no encontradas [vacacionesId={}]", id);
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Vacación no encontrada.");
         }
 
@@ -186,17 +203,23 @@ public class TalentoController {
             logger.info("Validando días disponibles para empleado [numeroEmpleado={}, solicitado={}]", vac.getNumeroEmpleado(), vac.getTotalDias());
             boolean valido = validacionVacacionesService.validarDiasVacacionesDisponibles(vac);
             if (!valido) {
+                MDC.put("codigo_error", CodigoError.SIN_DIAS_SUFI.getCodigo());
                 logger.warn("Empleado sin días suficientes para sus vacaciones [numeroEmpleado={}, solicitado={}]", vac.getNumeroEmpleado(), vac.getTotalDias());
+                MDC.remove("codigo_error");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Error: El empleado no tiene suficientes días de vacaciones disponibles.");
             }
         } catch (InterruptedException e) {
+            MDC.put("codigo_error", CodigoError.VALIDACION_INTERRUP.getCodigo());
             logger.error("Validación interrumpida para vacaciones [vacacionesId={}]: {}", id, e.getMessage());
+            MDC.remove("codigo_error");
             Thread.currentThread().interrupt();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al validar días disponibles (interrumpido).");
         } catch (Exception e) {
+            MDC.put("codigo_error", CodigoError.ERROR_VALIDACION.getCodigo());
             logger.error("Error inesperado al validar vacaciones [vacacionesId={}]: {}", id, e.getMessage());
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error inesperado de validación: " + e.getMessage());
         }
@@ -251,20 +274,26 @@ public class TalentoController {
             @RequestParam String rol,
             @RequestHeader(value = "X-Session-ID", required = true) String sessionId) {
         if (sessionId == null || sessionId.isEmpty()) {
-            logger.warn("El X-Session-ID es requerido ");
+            MDC.put("codigo_error", CodigoError.CREDENCIALES_INVALIDAS.getCodigo());
+            logger.warn("El X-Session-ID es requerido");
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session ID requerido");
         }
 
         logger.info("Intentando aprobar incapacidad [incapacidadId={}, rol={}]", id, rol);
 
         if (!"LIDER".equals(rol)) {
+            MDC.put("codigo_error", CodigoError.PERMISO_DENEGADO.getCodigo());
             logger.warn("Acceso denegado: Usuario sin permiso de líder [incapacidadId={}, rol={}]", id, rol);
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acceso restringido a líderes.");
         }
 
         Incapacidad incapacidad = incapacidadRepository.findById(id).orElse(null);
         if (incapacidad == null) {
+            MDC.put("codigo_error", CodigoError.USUARIO_NO_ENCONTRADO.getCodigo());
             logger.error("Incapacidad no encontrada [incapacidadId={}]", id);
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Incapacidad no encontrada.");
         }
 
@@ -273,18 +302,24 @@ public class TalentoController {
                     incapacidad.getNumeroEmpleado(), incapacidad.getTotalDias());
             boolean valido = validacionVacacionesService.validarDiasIncapacidadDisponibles(incapacidad);
             if (!valido) {
+                MDC.put("codigo_error", CodigoError.SIN_DIAS_SUFI.getCodigo());
                 logger.warn("Empleado sin días suficientes para incapacidad [numeroEmpleado={}, solicitado={}]",
                         incapacidad.getNumeroEmpleado(), incapacidad.getTotalDias());
+                MDC.remove("codigo_error");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Error: El empleado no tiene suficientes días de incapacidad disponibles.");
             }
         } catch (InterruptedException e) {
+            MDC.put("codigo_error", CodigoError.VALIDACION_INTERRUP.getCodigo());
             logger.error("Validación interrumpida para incapacidad [incapacidadId={}]: {}", id, e.getMessage());
+            MDC.remove("codigo_error");
             Thread.currentThread().interrupt();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al validar días disponibles (interrumpido).");
         } catch (Exception e) {
+            MDC.put("codigo_error", CodigoError.ERROR_VALIDACION.getCodigo());
             logger.error("Error inesperado al validar incapacidad [incapacidadId={}]: {}", id, e.getMessage());
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error inesperado de validación: " + e.getMessage());
         }
@@ -341,20 +376,26 @@ public class TalentoController {
             @RequestHeader(value = "X-Session-ID", required = true) String sessionId) {
 
         if (sessionId == null || sessionId.isEmpty()) {
-            logger.warn("El X-Session-ID es requerido ");
+            MDC.put("codigo_error", CodigoError.CREDENCIALES_INVALIDAS.getCodigo());
+            logger.warn("El X-Session-ID es requerido");
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session ID requerido");
         }
 
         logger.info("Intentando aprobar calamidad [calamidadId={}, rol={}]", id, rol);
 
         if (!"LIDER".equals(rol)) {
+            MDC.put("codigo_error", CodigoError.PERMISO_DENEGADO.getCodigo());
             logger.warn("Acceso denegado: Usuario sin permiso de líder [calamidadId={}, rol={}]", id, rol);
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acceso restringido a líderes.");
         }
 
         Calamidad calamidad = calamidadRepository.findById(id).orElse(null);
         if (calamidad == null) {
+            MDC.put("codigo_error", CodigoError.USUARIO_NO_ENCONTRADO.getCodigo());
             logger.error("Calamidad no encontrada [calamidadId={}]", id);
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Calamidad no encontrada.");
         }
 
@@ -363,18 +404,24 @@ public class TalentoController {
                     calamidad.getNumeroEmpleado(), calamidad.getTotalDias());
             boolean valido = validacionVacacionesService.validarDiasCalamidadDisponibles(calamidad);
             if (!valido) {
+                MDC.put("codigo_error", CodigoError.SIN_DIAS_SUFI.getCodigo());
                 logger.warn("Empleado sin días suficientes para calamidad [numeroEmpleado={}, solicitado={}]",
                         calamidad.getNumeroEmpleado(), calamidad.getTotalDias());
+                MDC.remove("codigo_error");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Error: El empleado no tiene suficientes días de calamidad disponibles.");
             }
         } catch (InterruptedException e) {
+            MDC.put("codigo_error", CodigoError.VALIDACION_INTERRUP.getCodigo());
             logger.error("Validación interrumpida para calamidad [calamidadId={}]: {}", id, e.getMessage());
+            MDC.remove("codigo_error");
             Thread.currentThread().interrupt();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al validar días disponibles (interrumpido).");
         } catch (Exception e) {
+            MDC.put("codigo_error", CodigoError.ERROR_VALIDACION.getCodigo());
             logger.error("Error inesperado al validar calamidad [calamidadId={}]: {}", id, e.getMessage());
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error inesperado de validación: " + e.getMessage());
         }
@@ -393,6 +440,7 @@ public class TalentoController {
 
         return ResponseEntity.ok(calamidad);
     }
+
 
     @PostMapping("/rechazarCalamidad/{id}")
     public Calamidad rechazarCalamidad(@PathVariable Long id, @RequestParam String rol) {
@@ -429,20 +477,26 @@ public class TalentoController {
             @RequestParam String rol,
             @RequestHeader(value = "X-Session-ID", required = true) String sessionId) {
         if (sessionId == null || sessionId.isEmpty()) {
-            logger.warn("El X-Session-ID es requerido ");
+            MDC.put("codigo_error", CodigoError.CREDENCIALES_INVALIDAS.getCodigo());
+            logger.warn("El X-Session-ID es requerido");
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session ID requerido");
         }
 
         logger.info("Intentando aprobar día cumpleaños [diaCumpleanioId={}, rol={}]", id, rol);
 
         if (!"LIDER".equals(rol)) {
+            MDC.put("codigo_error", CodigoError.PERMISO_DENEGADO.getCodigo());
             logger.warn("Acceso denegado: Usuario sin permiso de líder [diaCumpleanioId={}, rol={}]", id, rol);
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acceso restringido a líderes.");
         }
 
         DiaCumpleanio dia = diaCumpleanioRepository.findById(id).orElse(null);
         if (dia == null) {
+            MDC.put("codigo_error", CodigoError.USUARIO_NO_ENCONTRADO.getCodigo());
             logger.error("Día cumpleaños no encontrado [diaCumpleanioId={}]", id);
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Día de cumpleaños no encontrado.");
         }
 
@@ -450,17 +504,23 @@ public class TalentoController {
             logger.info("Validando días disponibles para día cumpleaños [numeroEmpleado={}]", dia.getNumeroEmpleado());
             boolean valido = validacionVacacionesService.validarDiasCumpleanioDisponibles(dia);
             if (!valido) {
+                MDC.put("codigo_error", CodigoError.SIN_DIAS_SUFI.getCodigo());
                 logger.warn("Empleado sin días disponibles para día cumpleaños [numeroEmpleado={}]", dia.getNumeroEmpleado());
+                MDC.remove("codigo_error");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Error: El empleado no tiene suficientes días de cumpleaños disponibles.");
             }
         } catch (InterruptedException e) {
+            MDC.put("codigo_error", CodigoError.VALIDACION_INTERRUP.getCodigo());
             logger.error("Validación interrumpida para día cumpleaños [diaCumpleanioId={}]: {}", id, e.getMessage());
+            MDC.remove("codigo_error");
             Thread.currentThread().interrupt();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al validar días disponibles (interrumpido).");
         } catch (Exception e) {
+            MDC.put("codigo_error", CodigoError.ERROR_VALIDACION.getCodigo());
             logger.error("Error inesperado al validar día cumpleaños [diaCumpleanioId={}]: {}", id, e.getMessage());
+            MDC.remove("codigo_error");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error inesperado de validación: " + e.getMessage());
         }
@@ -479,6 +539,7 @@ public class TalentoController {
 
         return ResponseEntity.ok(dia);
     }
+
 
     @PostMapping("/rechazarDiaCumpleanio/{id}")
     public DiaCumpleanio rechazarDiaCumpleanio(@PathVariable Long id, @RequestParam String rol) {
@@ -567,30 +628,26 @@ public class TalentoController {
 
         List<CierreMesResultadoDTO> resultados = new ArrayList<>();
 
-        // 1. Procesar VACACIONES aprobadas
         List<Vacaciones> vacacionesAprobadas = vacacionesRepository.findAll()
-                .stream().filter(v -> "APROBADA".equalsIgnoreCase(v.getEstado())).collect(Collectors.toList());
+                .stream().filter(v -> "APROBADA".equalsIgnoreCase(v.getEstado())).toList();
         for (Vacaciones v : vacacionesAprobadas) {
             resultados.add(simularEnvioNomina("VACACIONES", v.getId(), v.getNombreEmpleado()));
         }
 
-        // 2. Procesar INCAPACIDAD aprobadas
         List<Incapacidad> incapacidadAprobadas = incapacidadRepository.findAll()
-                .stream().filter(i -> "APROBADA".equalsIgnoreCase(i.getEstado())).collect(Collectors.toList());
+                .stream().filter(i -> "APROBADA".equalsIgnoreCase(i.getEstado())).toList();
         for (Incapacidad i : incapacidadAprobadas) {
             resultados.add(simularEnvioNomina("INCAPACIDAD", i.getId(), i.getNombreEmpleado()));
         }
 
-        // 3. Procesar CALAMIDAD aprobadas
         List<Calamidad> calamidadAprobadas = calamidadRepository.findAll()
-                .stream().filter(c -> "APROBADA".equalsIgnoreCase(c.getEstado())).collect(Collectors.toList());
+                .stream().filter(c -> "APROBADA".equalsIgnoreCase(c.getEstado())).toList();
         for (Calamidad c : calamidadAprobadas) {
             resultados.add(simularEnvioNomina("CALAMIDAD", c.getId(), c.getNombreEmpleado()));
         }
 
-        // 4. Procesar DIA CUMPLEAÑOS aprobadas
         List<DiaCumpleanio> cumpleAprobados = diaCumpleanioRepository.findAll()
-                .stream().filter(d -> "APROBADA".equalsIgnoreCase(d.getEstado())).collect(Collectors.toList());
+                .stream().filter(d -> "APROBADA".equalsIgnoreCase(d.getEstado())).toList();
         for (DiaCumpleanio d : cumpleAprobados) {
             resultados.add(simularEnvioNomina("DIA_CUMPLEANIO", d.getId(), d.getNombreEmpleado()));
         }
@@ -625,6 +682,5 @@ public class TalentoController {
         }
         return dto;
     }
-
 
 }
