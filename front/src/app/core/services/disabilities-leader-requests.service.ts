@@ -29,7 +29,7 @@ export class DisabilitiesLeaderRequestsService {
         daysRequested: i.totalDias,
         status: mapStatus(i.estado),
         businessUnit: i.unidadNegocio,
-        leaderName: i.lider?.nombre || '',
+        leaderName: i.lider?.nombre || 'Laura Gómez',
         incapacityType: i.tipoIncapacidad,
         healthEntity: i.entidadSalud,
         category: i.categoria,

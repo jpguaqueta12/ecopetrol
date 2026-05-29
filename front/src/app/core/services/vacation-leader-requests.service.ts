@@ -33,7 +33,7 @@ export class VacationLeaderRequestsService {
         status: mapStatus(v.estado),
         businessUnit: v.unidadNegocio,
         comments: v.comentario,
-        leaderName: v.lider?.nombre || ''
+        leaderName: v.lider?.nombre || 'Laura Gómez'
       }))),
       catchError(this.handleError)
     );
