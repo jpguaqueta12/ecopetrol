@@ -30,7 +30,7 @@ export class CalamityLeaderRequestsService {
         status: mapStatus(c.estado),
         businessUnit: c.unidadNegocio,
         comments: c.comentario,
-        leaderName: c.lider?.nombre || '',
+        leaderName: c.lider?.nombre || 'Laura Gómez',
         attachedFileName: c.archivoAdjunto || ''
       }))),
       catchError(this.handleError)

@@ -33,7 +33,7 @@ export class BirthdayLeaderRequestsService {
         status: mapStatus(d.estado),
         businessUnit: d.unidadNegocio,
         comments: d.comentario,
-        leaderName: d.lider?.nombre || ''
+        leaderName: d.lider?.nombre || 'Laura Gómez'
       }))),
       catchError(this.handleError)
     );
