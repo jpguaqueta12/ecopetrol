@@ -32,6 +32,7 @@ export class DetailComponent implements OnInit {
     this.service.getRequests().subscribe({
       next: (items) => {
         this.requestData = items.find(r => r.id === id) || null;
+        console.log('info',this.requestData);
         this.isLoading = false;
         if (!this.requestData) this.errorMessage = 'Solicitud no encontrada.';
       },
