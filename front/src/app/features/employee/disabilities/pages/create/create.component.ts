@@ -35,8 +35,8 @@ export class CreateComponent implements OnInit {
     { number: '583746', name: 'Valentina Castro', businessUnit: 'Desarrollo Angular', leader: 'Sergio Torres' }
   ];
 
-  businessUnits: string[] = ['Desarrollo Angular', 'Diseño UI/UX', 'Aseguramiento de Calidad'];
-  leaders: string[] = ['Laura Gómez', 'Sergio Torres'];
+  businessUnits: string[] = ['Desarrollo Angular', 'Diseño UI/UX', 'Digital Strategy & Business'];
+  leaders: string[] = ['Laura Gómez', 'Sergio Torres', 'Andrés Felipe Restrepo']
   incapacityTypes: string[] = ['Enfermedad General', 'Accidente de Trabajo', 'Maternidad / Paternidad'];
   healthEntities: string[] = ['EPS Sura', 'Sanitas', 'Compensar', 'Nueva EPS'];
   categories: string[] = ['Incapacidad Inicial', 'Prórroga'];

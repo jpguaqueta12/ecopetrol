@@ -34,8 +34,8 @@ export class CreateComponent implements OnInit {
     { number: '583746', name: 'Valentina Castro', businessUnit: 'Desarrollo Angular', leader: 'Sergio Torres' }
   ];
 
-  businessUnits: string[] = ['Digital Strategy & Business', 'Desarrollo Angular', 'Diseño UI/UX'];
-  leaders: string[] = ['Laura Gómez', 'Sergio Torres', 'Andrés Felipe Restrepo'];
+  businessUnits: string[] = ['Desarrollo Angular', 'Diseño UI/UX','Digital Strategy & Business'];
+  leaders: string[] = ['Laura Gómez', 'Sergio Torres', 'Andrés Felipe Restrepo']
 
   isLoading: boolean = false;
   successMessage: string = '';

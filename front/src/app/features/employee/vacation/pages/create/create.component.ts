@@ -42,7 +42,7 @@ export class CreateComponent implements OnInit {
     { number: '583746', name: 'Valentina Castro', businessUnit: 'Desarrollo Angular', leader: 'Sergio Torres' }
   ];
 
-  businessUnits: string[] = ['Desarrollo Angular', 'Diseño UI/UX', 'Aseguramiento de Calidad', 'Célula de Innovación'];
+  businessUnits: string[] = ['Desarrollo Angular', 'Diseño UI/UX','Digital Strategy & Business'];
   leaders: string[] = ['Laura Gómez', 'Sergio Torres', 'Andrés Felipe Restrepo']
 
   ngOnInit(): void {
