@@ -18,7 +18,7 @@ public class NominaApiClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NominaApiClient.class);
     //private final String nominaEndpointUrl = "http://IP_O_NOMBRE_VM/api/nomina/cierreMes";
-    private final String nominaEndpointUrl = "http://52.233.91.10:8080/api/nomina/cierreMes";
+    private final String nominaEndpointUrl = "http://52.233.91.10:8888/api/nomina/cierreMes";
     private final RestTemplate restTemplate = new RestTemplate();
 
     public CierreMesResultadoDTO enviarCierreMes(String tipo, Long id, String nombreEmpleado) {
