@@ -1,8 +1,12 @@
 package com.nttdata.ecopetrol.talento.config;
 
+import com.nttdata.ecopetrol.talento.dto.CierreMesRequestDTO;
 import com.nttdata.ecopetrol.talento.dto.CierreMesResultadoDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -22,15 +26,20 @@ public class NominaApiClient {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public CierreMesResultadoDTO enviarCierreMes(String tipo, Long id, String nombreEmpleado) {
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("tipo", tipo);
-        requestBody.put("id", id);
-        requestBody.put("nombreEmpleado", nombreEmpleado);
+        CierreMesRequestDTO dto = new CierreMesRequestDTO();
+        dto.setTipo(tipo);
+        dto.setId(id);
+        dto.setNombreEmpleado(nombreEmpleado);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<CierreMesRequestDTO> requestEntity = new HttpEntity<>(dto, headers);
 
         try {
             return restTemplate.postForObject(
                     nominaEndpointUrl,
-                    requestBody,
+                    requestEntity,
                     CierreMesResultadoDTO.class
             );
         } catch (HttpStatusCodeException ex) {
