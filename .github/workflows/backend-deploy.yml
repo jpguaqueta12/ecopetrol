@@ -50,6 +50,17 @@ jobs:
             ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-      - name: Notice — restart ACI to pick up new image
-        run: |
-          echo "::notice title=Manual step::Run 'az container restart --name aci-central-ecopetrol --resource-group rg-central-solucion-talento' to deploy the new image."
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Restart ACI to pick up new image
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az container restart \
+              --name aci-centralecopetrol \
+              --resource-group rg-central-solucion-talento
+            echo "ACI restarted — pulling ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:latest (commit ${{ github.sha }})"
