@@ -1,5 +1,6 @@
 package com.nttdata.ecopetrol.talento.controller;
 
+import com.nttdata.ecopetrol.talento.config.NominaApiClient;
 import com.nttdata.ecopetrol.talento.dto.CierreMesResultadoDTO;
 import com.nttdata.ecopetrol.talento.dto.LoginRequest;
 import com.nttdata.ecopetrol.talento.enums.CodigoError;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 @RestController
@@ -46,6 +48,9 @@ public class TalentoController {
 
     @Autowired
     private ValidacionVacacionesService validacionVacacionesService;
+
+    @Autowired
+    private NominaApiClient nominaApiClient;
 
     private static final Logger logger = LoggerFactory.getLogger(TalentoController.class);
 
@@ -628,59 +633,45 @@ public class TalentoController {
 
         List<CierreMesResultadoDTO> resultados = new ArrayList<>();
 
-        List<Vacaciones> vacacionesAprobadas = vacacionesRepository.findAll()
-                .stream().filter(v -> "APROBADA".equalsIgnoreCase(v.getEstado())).toList();
-        for (Vacaciones v : vacacionesAprobadas) {
-            resultados.add(simularEnvioNomina("VACACIONES", v.getId(), v.getNombreEmpleado()));
-        }
+        vacacionesRepository.findAll()
+                .stream().filter(v -> "APROBADA".equalsIgnoreCase(v.getEstado()))
+                .forEach(v -> {
+                    simularDelay();
+                    resultados.add(nominaApiClient.enviarCierreMes("VACACIONES", v.getId(), v.getNombreEmpleado()));
+                });
 
-        List<Incapacidad> incapacidadAprobadas = incapacidadRepository.findAll()
-                .stream().filter(i -> "APROBADA".equalsIgnoreCase(i.getEstado())).toList();
-        for (Incapacidad i : incapacidadAprobadas) {
-            resultados.add(simularEnvioNomina("INCAPACIDAD", i.getId(), i.getNombreEmpleado()));
-        }
+        incapacidadRepository.findAll()
+                .stream().filter(i -> "APROBADA".equalsIgnoreCase(i.getEstado()))
+                .forEach(i -> {
+                    simularDelay();
+                    resultados.add(nominaApiClient.enviarCierreMes("INCAPACIDAD", i.getId(), i.getNombreEmpleado()));
+                });
 
-        List<Calamidad> calamidadAprobadas = calamidadRepository.findAll()
-                .stream().filter(c -> "APROBADA".equalsIgnoreCase(c.getEstado())).toList();
-        for (Calamidad c : calamidadAprobadas) {
-            resultados.add(simularEnvioNomina("CALAMIDAD", c.getId(), c.getNombreEmpleado()));
-        }
+        calamidadRepository.findAll()
+                .stream().filter(c -> "APROBADA".equalsIgnoreCase(c.getEstado()))
+                .forEach(c -> {
+                    simularDelay();
+                    resultados.add(nominaApiClient.enviarCierreMes("CALAMIDAD", c.getId(), c.getNombreEmpleado()));
+                });
 
-        List<DiaCumpleanio> cumpleAprobados = diaCumpleanioRepository.findAll()
-                .stream().filter(d -> "APROBADA".equalsIgnoreCase(d.getEstado())).toList();
-        for (DiaCumpleanio d : cumpleAprobados) {
-            resultados.add(simularEnvioNomina("DIA_CUMPLEANIO", d.getId(), d.getNombreEmpleado()));
-        }
-
+        diaCumpleanioRepository.findAll()
+                .stream().filter(d -> "APROBADA".equalsIgnoreCase(d.getEstado()))
+                .forEach(d -> {
+                    simularDelay();
+                    resultados.add(nominaApiClient.enviarCierreMes("DIA_CUMPLEANIO", d.getId(), d.getNombreEmpleado()));
+                });
         return ResponseEntity.ok(resultados);
     }
 
-    private CierreMesResultadoDTO simularEnvioNomina(String tipo, Long id, String nombreEmpleado) {
-        Random random = new Random();
-        int delay = random.nextInt(5000) + 10000; // Entre 10,000 y 15,000 ms (10 a 15 segundos)
-        boolean exito = random.nextBoolean();
-        CierreMesResultadoDTO dto = new CierreMesResultadoDTO();
-        dto.setTipoSolicitud(tipo);
-        dto.setId(id);
-        dto.setNombreEmpleado(nombreEmpleado);
-
+    private void simularDelay() {
+        int delaySecs = ThreadLocalRandom.current().nextInt(5, 11); // 5 a 10 segundos inclusive
         try {
-            Thread.sleep(delay);
-            if (exito) {
-                dto.setEstadoEnvio("EXITOSO");
-                dto.setMensaje("Enviado correctamente a nómina en " + delay + " ms.");
-                logger.info("Solicitud {} ID {} enviada a nómina correctamente", tipo, id);
-            } else {
-                dto.setEstadoEnvio("FALLIDO");
-                dto.setMensaje("Error al enviar solicitud al sistema de nómina (simulado). Tardo " + delay + " ms.");
-                logger.warn("Solicitud {} ID {} falló en envío a nómina (mock)", tipo, id);
-            }
+            logger.info("[CierreMes] Simulando delay de {} segundos ({})ms para transacción...", delaySecs, delaySecs * 1000);
+            Thread.sleep(delaySecs * 1000L);
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            dto.setEstadoEnvio("FALLIDO");
-            dto.setMensaje("Interrumpido mientras se enviaba a nómina");
+            Thread.currentThread().interrupt(); // Best-practice: restaurar bandera de interrupción
+            logger.warn("[CierreMes] Delay artificial interrumpido para transacción.");
         }
-        return dto;
     }
 
 }

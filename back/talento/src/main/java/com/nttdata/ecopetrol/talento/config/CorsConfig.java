@@ -10,7 +10,11 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/talento/**")
-                .allowedOrigins("*")
+                .allowedOrigins(
+                        "http://localhost:4200",
+                        "https://kind-moss-0208c3e10.7.azurestaticapps.net",
+                        "https://app-central-ecopetrol-geeqdnayfth9d7cx.centralus-01.azurewebsites.net"
+                )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .exposedHeaders("X-Session-ID")
