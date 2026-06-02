@@ -629,7 +629,7 @@ public class TalentoController {
 
     @PostMapping("/cierreMes")
     public ResponseEntity<List<CierreMesResultadoDTO>> cierreMes() {
-        logger.info("Iniciando proceso de cierre de mes y envío a nómina (mock)");
+        logger.info("Iniciando proceso de cierre de mes y envío a nómina (mock) 02.junio.2026 11:19am");
 
         List<CierreMesResultadoDTO> resultados = new ArrayList<>();
 
