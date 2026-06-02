@@ -15,6 +15,8 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    env:
+      HAS_AZURE_CREDS: ${{ secrets.AZURE_CREDENTIALS != '' }}
 
     steps:
       - name: Checkout
@@ -51,11 +53,13 @@ jobs:
             ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Log in to Azure
+        if: env.HAS_AZURE_CREDS == 'true'
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Restart ACI to pick up new image
+        if: env.HAS_AZURE_CREDS == 'true'
         uses: azure/cli@v2
         with:
           azcliversion: latest
@@ -64,3 +68,8 @@ jobs:
               --name aci-centralecopetrol \
               --resource-group rg-central-solucion-talento
             echo "ACI restarted — pulling ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:latest (commit ${{ github.sha }})"
+
+      - name: Notice — Azure redeploy skipped
+        if: env.HAS_AZURE_CREDS != 'true'
+        run: |
+          echo "::warning title=Redeploy skipped::Image pushed to ACR but ACI was NOT restarted because the AZURE_CREDENTIALS secret is missing. Add it to enable auto-redeploy."
