@@ -2,15 +2,17 @@
     <!-- Appender para consola en formato JSON -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <!-- Puedes personalizar/añadir campos fijos aquí -->
+            <!-- Campos dedicados que se serializan como propiedades del JSON
+                 (no van embebidos en "message"), para evitar parsear con regex. -->
             <includeMdcKeyName>correlation_id</includeMdcKeyName>
-            <includeMdcKeyName>codigo_error</includeMdcKeyName>
+            <includeMdcKeyName>error_code</includeMdcKeyName>
+            <includeMdcKeyName>usuario</includeMdcKeyName>
             <customFields>{"modulo":"talento"}</customFields>
         </encoder>
     </appender>
 
     <!-- Nivel ROOT, puedes ajustarlo a tu preferencia -->
-    <root level="INFO">s
+    <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>
