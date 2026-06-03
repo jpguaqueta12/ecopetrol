@@ -52,24 +52,64 @@ jobs:
             ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
+      # NOTA: el secret AZURE_CREDENTIALS debe ser un service principal CON rol
+      # (p.ej. Contributor) sobre la suscripcion 7c5b032f-7879-4ec3-a2ed-978b444f6755
+      # y en el tenant correcto. Si da "No subscriptions found", regenerarlo con:
+      #   az ad sp create-for-rbac --name sp-ecopetrol-deploy --role Contributor \
+      #     --scopes /subscriptions/7c5b032f-7879-4ec3-a2ed-978b444f6755/resourceGroups/rg-central-solucion-talento \
+      #     --sdk-auth
+      # y pegar el JSON resultante (incluye tenantId + subscriptionId) en el secret.
       - name: Log in to Azure
         if: env.HAS_AZURE_CREDS == 'true'
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Restart ACI to pick up new image
+      # ACI no permite cambiar la imagen "in-place" ni `az container restart` baja una
+      # imagen nueva (reinicia el mismo digest). Hay que borrar y recrear apuntando al
+      # tag del commit. Se conserva la subnet privada -> la IP (10.0.3.4) se mantiene.
+      - name: Redeploy ACI with new image
         if: env.HAS_AZURE_CREDS == 'true'
         uses: azure/cli@v2
+        env:
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
         with:
           azcliversion: latest
           inlineScript: |
-            az container restart \
-              --name aci-centralecopetrol \
-              --resource-group rg-central-solucion-talento
-            echo "ACI restarted — pulling ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:latest (commit ${{ github.sha }})"
+            set -e
+            RG=rg-central-solucion-talento
+            ACI=aci-centralecopetrol
+            IMAGE="${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${{ github.sha }}"
+            SUBNET="/subscriptions/7c5b032f-7879-4ec3-a2ed-978b444f6755/resourceGroups/${RG}/providers/Microsoft.Network/virtualNetworks/vnet-central-ecopetrol/subnets/snet-ci-central-ecopetrol"
+
+            echo "Borrando ACI actual (imagen vieja)..."
+            az container delete --name "$ACI" --resource-group "$RG" --yes
+
+            echo "Creando ACI con imagen $IMAGE ..."
+            az container create \
+              --resource-group "$RG" \
+              --name "$ACI" \
+              --image "$IMAGE" \
+              --os-type Linux \
+              --cpu 1 --memory 1.5 \
+              --ports 8080 \
+              --restart-policy OnFailure \
+              --subnet "$SUBNET" \
+              --registry-login-server "$ACR_LOGIN_SERVER" \
+              --registry-username "$ACR_USERNAME" \
+              --registry-password "$ACR_PASSWORD" \
+              --environment-variables \
+                SPRING_JPA_HIBERNATE_DDL_AUTO=update \
+                SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION=false \
+                SPRING_SQL_INIT_MODE=never \
+                SERVER_PORT=8080
+
+            echo "Estado final del ACI:"
+            az container show --name "$ACI" --resource-group "$RG" \
+              --query "{state:instanceView.state, ip:ipAddress.ip, image:containers[0].image}" -o json
 
       - name: Notice — Azure redeploy skipped
         if: env.HAS_AZURE_CREDS != 'true'
         run: |
-          echo "::warning title=Redeploy skipped::Image pushed to ACR but ACI was NOT restarted because the AZURE_CREDENTIALS secret is missing. Add it to enable auto-redeploy."
+          echo "::warning title=Redeploy skipped::Image pushed to ACR but ACI was NOT redeployed because the AZURE_CREDENTIALS secret is missing. Add it to enable auto-redeploy."
